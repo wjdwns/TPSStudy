@@ -30,6 +30,8 @@ ATPSPlayer::ATPSPlayer()
 	tpsCamComp->bUsePawnControlRotation = false;
 
 	bUseControllerRotationYaw = true;
+	
+	JumpMaxCount = 2;
 }
 
 // Called when the game starts or when spawned
@@ -59,6 +61,14 @@ void ATPSPlayer::Tick(float DeltaTime)
 	//SetActorLocation(P);
 	AddMovementInput(direction);
 	direction = FVector::ZeroVector;
+	PlayerMove();
+}
+
+void ATPSPlayer::PlayerMove()
+{
+	direction = FTransform(GetControlRotation()).TransformVector(direction);
+	AddMovementInput(direction);
+	direction = FVector::ZeroVector;
 }
 
 // Called to bind functionality to input
@@ -71,6 +81,7 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		PlayerInput->BindAction(ia_Turn, ETriggerEvent::Triggered, this, &ATPSPlayer::Turn);
 		PlayerInput->BindAction(ia_LookUp, ETriggerEvent::Triggered, this, &ATPSPlayer::LookUp);
 		PlayerInput->BindAction(ia_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::Move);
+		PlayerInput->BindAction(ia_Jump, ETriggerEvent::Triggered, this, &ATPSPlayer::InputJump);
 	}
 }
 
@@ -91,5 +102,10 @@ void ATPSPlayer::Move(const struct FInputActionValue& inputValue)
 	FVector2D value = inputValue.Get<FVector2D>();
 	direction.X = value.X;
 	direction.Y = value.Y;
+}
+
+void ATPSPlayer::InputJump(const struct FInputActionValue& inputValue)
+{
+		Jump();
 }
 

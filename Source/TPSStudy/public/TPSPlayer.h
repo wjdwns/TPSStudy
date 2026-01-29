@@ -19,7 +19,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -33,21 +33,26 @@ public:
 	class UCameraComponent* tpsCamComp;
 
 public:
-		UPROPERTY(EditDefaultsOnly, Category="Input")
-		class UInputMappingContext* imc_TPS;
-		UPROPERTY(EditDefaultsOnly, Category="Input")
-		class UInputAction* ia_LookUp;
-		UPROPERTY(EditDefaultsOnly, Category = "Input")
-		class UInputAction* ia_Turn;
+	UPROPERTY(EditDefaultsOnly, Category = "input")
+	class UInputMappingContext* imc_TPS;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	class UInputAction* ia_LookUp;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Turn;
 
-		void Turn(const struct FInputActionValue& inputValue);
-		void LookUp(const struct FInputActionValue& inputValue);
+	void Turn(const struct FInputActionValue& inputValue);
+	void LookUp(const struct FInputActionValue& inputValue);
 
-		UPROPERTY(EditDefaultsOnly, Category = "Input")
-		class UInputAction* ia_Move;
-		UPROPERTY(EditAnywhere, Category = PlayerSetting)
-		float walkSpeed = 600;
-		FVector direction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	class UInputAction* ia_Move;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float walkSpeed = 600;
+	FVector direction;
 
-		void Move(const struct FInputActionValue& inputValue);
+	void Move(const struct FInputActionValue& inputValue);
+	UPROPERTY(EditDefaultsOnly, Category = "input")
+	class UInputAction* ia_Jump;
+	void InputJump(const struct FInputActionValue& inputValue);
+	
+	void PlayerMove();
 };
