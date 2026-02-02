@@ -22,5 +22,18 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
+public:
+	//발사체 이동 담당할 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category=Movement)
+	class UProjectileMovementComponent* movementComp;
+	//충돌 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category=Collision)
+	class USphereComponent* collisionComp;
+	//외관 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category=BodyMesh)
+	class UStaticMeshComponent* bodyMeshComp;
+	
+	//총알 제거 함수
+	void Die();
 };

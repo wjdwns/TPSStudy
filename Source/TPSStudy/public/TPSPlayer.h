@@ -29,7 +29,7 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class USpringArmComponent* springArmComp;
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* tpsCamComp;
 
 public:
@@ -55,4 +55,44 @@ public:
 	void InputJump(const struct FInputActionValue& inputValue);
 	
 	void PlayerMove();
+	//총 스켈레탈메시
+	UPROPERTY(VisibleAnywhere,Category=GunMesh)
+	class USkeletalMeshComponent* gunMeshComp;
+	
+	//총알 공장
+	UPROPERTY(EditDefaultsOnly, Category=BulletFactory)
+	TSubclassOf<class ABullet> bulletFactory;
+	
+	UPROPERTY(EditDefaultsOnly, Category="input")
+	class UInputAction* ia_Fire;
+	//총알 발사 처리함수
+	void InputFire(const struct FInputActionValue& inputValue);
+	
+	UPROPERTY(VisibleAnywhere, Category=GunMesh)
+	class UStaticMeshComponent* sniperGunComp;
+	
+	UPROPERTY(EditDefaultsOnly, Category="input")
+	class UInputAction* ia_GrenadeGun;
+	
+	UPROPERTY(EditDefaultsOnly, Category="input")
+	class UInputAction* ia_SniperGun;
+	//유탄총 사용중 여부
+	bool bUsingGrenadeGun = true;
+	//유탄총 변경
+	void ChangeToGrenadeGun(const struct FInputActionValue& inputValue);
+	//스나이퍼 변경
+	void ChangeToSniperGun(const struct FInputActionValue& inputValue);
+	
+	UPROPERTY(EditDefaultsOnly, Category="input")
+	class UInputAction* ia_Sniper;
+	//스나이퍼 조준처리함수
+	void SniperAim(const struct FInputActionValue& inputValue);
+	//스나이퍼 조준 중인지 여부
+	bool bSniperAim = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category=SniperUI)
+	TSubclassOf<class UUserWidget> sniperUIFactory;
+	
+	UPROPERTY()
+	class UUserWidget* _sniperUI;
 };
