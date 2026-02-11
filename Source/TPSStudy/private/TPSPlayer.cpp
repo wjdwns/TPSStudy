@@ -8,6 +8,9 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "Bullet.h"
+#include <Blueprint/UserWidget.h>
+#include <Kismet/GameplayStatics.h>
+#include "EnemyFSM.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -79,6 +82,10 @@ void ATPSPlayer::BeginPlay()
 			subsystem->AddMappingContext(imc_TPS, 0);
 		}
 	}
+	//1. 스나이퍼 UI 위젯 인스턴스 생성
+	_sniperUI = CreateWidget(GetWorld(), sniperUIFactory);
+	_crosshairUI = CreateWidget(GetWorld(),crosshairUIFactory);
+	_crosshairUI->AddToViewport();
 	ChangeToSniperGun(FInputActionValue());
 }
 
@@ -126,14 +133,62 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void ATPSPlayer::SniperAim(const struct FInputActionValue& inputValue)
 {
-	
+	if (bUsingGrenadeGun)
+	{
+		return;
+	}
+	if (bSniperAim == false)
+	{
+		bSniperAim = true;
+		_sniperUI->AddToViewport();
+		tpsCamComp->SetFieldOfView(45.0f);
+		_crosshairUI->RemoveFromParent();
+	}
+	else
+	{
+		bSniperAim = false;
+		_sniperUI->RemoveFromParent();
+		tpsCamComp->SetFieldOfView(90.0f);
+		_crosshairUI->AddToViewport();
+	}
 }
 
 void ATPSPlayer::InputFire(const struct FInputActionValue& inputValue)
 {
-	//총알 발사처리
-	FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-	GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	if (bUsingGrenadeGun)
+	{
+		//총알 발사처리
+		FTransform firePosition = gunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<ABullet>(bulletFactory, firePosition);
+	}else
+	{
+		FVector startPos= tpsCamComp->GetComponentLocation();
+		FVector endPos = tpsCamComp->GetComponentLocation() + tpsCamComp->GetForwardVector() * 5000;
+		FHitResult hitInfo;
+		FCollisionQueryParams collisionParams;
+		collisionParams.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECC_Visibility, collisionParams);
+		if (bHit)
+		{
+			FTransform bulletTrans;
+			bulletTrans.SetLocation(hitInfo.ImpactPoint);
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),bulletEffectFactory,bulletTrans);
+			auto hitComp = hitInfo.GetComponent();
+			if (hitComp && hitComp->IsSimulatingPhysics())
+			{
+				FVector dir = (endPos - startPos).GetSafeNormal();
+				FVector force = dir * hitComp->GetMass() * 500000;
+				hitComp->AddForceAtLocation(force, hitInfo.ImpactPoint);
+			}
+			auto enemy = hitInfo.GetActor()->GetDefaultSubobjectByName(TEXT("FSM"));
+			if (enemy)
+			{
+				auto enemyFSM = Cast<UEnemyFSM>(enemy);
+				enemyFSM -> OnDamageProcess();
+			}
+		}
+	}
+
 }
 
 void ATPSPlayer::Turn(const FInputActionValue& inputValue)
